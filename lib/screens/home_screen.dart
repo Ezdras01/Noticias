@@ -100,40 +100,65 @@ Widget build(BuildContext context) {
                     onSubmitted: (value) => _loadNews(query: value),
                   ),
                 ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () => _loadNews(query: _searchController.text),
-                child: const Icon(Icons.search),
-              ),
-            ],
-          ),
-        ),
-
-        // Lista o loading
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _articles.isEmpty
-                  ? const Center(child: Text('No se encontraron noticias.'))
-                  : ListView.builder(
-                      itemCount: _articles.length,
+                if (_searchHistory.isNotEmpty)
+                  SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      itemCount: _searchHistory.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (context, index) {
-                        final article = _articles[index];
-                        return NewsCard(
-                          article: article,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ArticleDetailScreen(article: article),
-                              ),
-                            );
-                          },
+                        final term = _searchHistory[index];
+                        return ActionChip(
+                          label: Text(term),
+                          onPressed: () => _loadNews(query: term),
                         );
                       },
                     ),
-        ),
+                  ),
+
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () => _loadNews(query: _searchController.text),
+                  child: const Icon(Icons.search),
+                ),
+              ],
+            ),
+          ),
+        // Lista o loading
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _articles.isEmpty
+                ? Center(
+                    child: Text(
+                      _lastQuery == null || _lastQuery!.isEmpty
+                          ? 'No hay noticias disponibles.'
+                          : 'No se encontraron noticias para "${_lastQuery!}".',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _articles.length,
+                    itemBuilder: (context, index) {
+                      final article = _articles[index];
+                      return NewsCard(
+                        article: article,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ArticleDetailScreen(article: article),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+          ),
       ],
     ),
   );
