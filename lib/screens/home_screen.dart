@@ -108,23 +108,58 @@ Widget build(BuildContext context) {
               ],
             ),
           ),
-          if (_searchHistory.isNotEmpty)
-                  SizedBox(
-                    height: 40,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemCount: _searchHistory.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        final term = _searchHistory[index];
-                        return ActionChip(
-                          label: Text(term),
-                          onPressed: () => _loadNews(query: term),
-                        );
-                      },
-                    ),
-                  ),
+if (_searchHistory.isNotEmpty)
+  Padding(
+    padding: const EdgeInsets.only(left: 12, right: 12, bottom: 4),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              'Historial:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _searchHistory.clear(); // Borrar todo
+                });
+              },
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Borrar todo'),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+            )
+          ],
+        ),
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _searchHistory.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final term = _searchHistory[index];
+              return InputChip(
+                label: Text(term),
+                onPressed: () {
+                  _searchController.text = term;
+                  _loadNews(query: term);
+                },
+                onDeleted: () {
+                  setState(() {
+                    _searchHistory.removeAt(index); // Borrar solo este
+                  });
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+  ),
+
         // Lista o loading
           Expanded(
             child: _isLoading
