@@ -26,6 +26,18 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> _searchHistory = [];
   String? _lastQuery;
 
+// Mapa de países y sus nombres en español
+final Map<String, String> _countries = {
+  'us': 'Estados Unidos',
+  'gb': 'Reino Unido',
+  'in': 'India',
+  'de': 'Alemania',
+  'fr': 'Francia',
+};
+
+String _selectedCountry = 'us'; // País por defecto
+
+
 
   // Estado de carga
   bool _isLoading = true;
@@ -42,9 +54,9 @@ Future<void> _loadNews({String? query}) async {
   setState(() => _isLoading = true);
 
   try {
-    final articles = query == null || query.isEmpty
-        ? await _newsService.fetchTopHeadlines(country: 'us')
-        : await _newsService.searchNews(query);
+final articles = query == null || query.isEmpty
+    ? await _newsService.fetchTopHeadlines(country: _selectedCountry)
+    : await _newsService.searchNews(query);
 
     setState(() {
       _articles = articles;
@@ -87,10 +99,41 @@ appBar: AppBar(
     )
   ],
 ),
-
     body: Column(
       children: [
-        // Barra de búsqueda
+        // Selector de país
+Padding(
+  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+  child: Row(
+    children: [
+      const Text(
+        'País:',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(width: 12),
+      DropdownButton<String>(
+        value: _selectedCountry,
+        items: _countries.entries
+            .map(
+              (entry) => DropdownMenuItem<String>(
+                value: entry.key,
+                child: Text(entry.value),
+              ),
+            )
+            .toList(),
+        onChanged: (value) {
+          if (value != null) {
+            setState(() {
+              _selectedCountry = value;
+            });
+            _loadNews(); // Recarga noticias al cambiar de país
+          }
+        },
+      ),
+    ],
+  ),
+),
+// Barra de búsqueda
         Padding(
           padding: const EdgeInsets.all(12),
             child: Row(
