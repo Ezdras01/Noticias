@@ -3,7 +3,8 @@ import '../models/news_article.dart';
 import '../services/news_service.dart';
 import '../widgets/news_card.dart';
 import 'article_detail_screen.dart'; // Importa la pantalla de detalle de artículo
-
+import 'package:provider/provider.dart';
+import '../controllers/theme_controller.dart'; // Importa el controlador de tema
 // Pantalla principal que muestra los titulares de noticias
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -68,7 +69,25 @@ Future<void> _loadNews({String? query}) async {
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: AppBar(title: const Text('Noticias Hoy'), centerTitle: true),
+appBar: AppBar(
+  title: const Text('Noticias Hoy'),
+  centerTitle: true,
+  actions: [
+    IconButton(
+      tooltip: 'Cambiar tema',
+      icon: Icon(
+        Theme.of(context).brightness == Brightness.dark
+            ? Icons.wb_sunny // ☀️ si está en oscuro, muestra sol
+            : Icons.nightlight_round, // 🌙 si está en claro, muestra luna
+      ),
+      onPressed: () {
+        // Cambia el tema usando el ThemeController
+        Provider.of<ThemeController>(context, listen: false).toggleTheme();
+      },
+    )
+  ],
+),
+
     body: Column(
       children: [
         // Barra de búsqueda
