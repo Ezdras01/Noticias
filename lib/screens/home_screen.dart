@@ -18,6 +18,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Lista de artículos obtenidos de la API
   List<NewsArticle> _articles = [];
+  // Controlador para el campo de búsqueda
+  TextEditingController _searchController = TextEditingController();
+
 
   // Estado de carga
   bool _isLoading = true;
@@ -30,47 +33,85 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Función que llama al servicio y actualiza el estado
-  Future<void> _loadNews() async {
-    try {
-      final articles = await _newsService.fetchTopHeadlines(country: 'us');
-      setState(() {
-        _articles = articles;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error al cargar noticias: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
+Future<void> _loadNews({String? query}) async {
+  setState(() => _isLoading = true);
+
+  try {
+    final articles = query == null || query.isEmpty
+        ? await _newsService.fetchTopHeadlines(country: 'us') //AQUI PUEDES MODIFICAR PARA CAMBIAR LA REGIÓN PARA LAS NOTICIAS
+        : await _newsService.searchNews(query);
+
+    setState(() {
+      _articles = articles;
+      _isLoading = false;
+    });
+  } catch (e) {
+    print('Error al cargar noticias: $e');
+    setState(() => _isLoading = false);
   }
+}
+
 
   // Método que construye la interfaz
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Noticias Hoy'), centerTitle: true),
-      body: _isLoading
-          // Mostrar indicador de carga mientras se obtienen datos
-          ? const Center(child: CircularProgressIndicator())
-          // Mostrar lista de noticias
-          : ListView.builder(
-              itemCount: _articles.length,
-              itemBuilder: (context, index) {
-                final article = _articles[index];
-                return NewsCard(
-                  article: article,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ArticleDetailScreen(article: article),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-    );
-  }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(title: const Text('Noticias Hoy'), centerTitle: true),
+    body: Column(
+      children: [
+        // Barra de búsqueda
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: const InputDecoration(
+                    hintText: 'Buscar noticias...',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  onSubmitted: (value) => _loadNews(query: value),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () => _loadNews(query: _searchController.text),
+                child: const Icon(Icons.search),
+              ),
+            ],
+          ),
+        ),
+
+        // Lista o loading
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _articles.isEmpty
+                  ? const Center(child: Text('No se encontraron noticias.'))
+                  : ListView.builder(
+                      itemCount: _articles.length,
+                      itemBuilder: (context, index) {
+                        final article = _articles[index];
+                        return NewsCard(
+                          article: article,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ArticleDetailScreen(article: article),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+        ),
+      ],
+    ),
+  );
+}
+
 }

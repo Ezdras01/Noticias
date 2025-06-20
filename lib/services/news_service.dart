@@ -24,4 +24,21 @@ class NewsService {
       throw Exception('Error al cargar noticias');
     }
   }
+  // Método que obtiene noticias de por palabras clave
+Future<List<NewsArticle>> searchNews(String query) async {
+  final url =
+      '$baseUrl?q=$query&sortBy=publishedAt&language=es&apiKey=$apiKey';
+  final response = await http.get(Uri.parse(url));
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    List articles = data['articles'];
+    return articles.map((json) => NewsArticle.fromJson(json)).toList();
+  } else {
+    throw Exception('Error al buscar noticias');
+  }
 }
+
+
+}
+
