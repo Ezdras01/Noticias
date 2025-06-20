@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/news_article.dart';
 import '../services/news_service.dart';
 import '../widgets/news_card.dart';
+import 'article_detail_screen.dart'; // Importa la pantalla de detalle de artículo
 
 // Pantalla principal que muestra los titulares de noticias
 class HomeScreen extends StatefulWidget {
@@ -57,11 +58,15 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: _articles.length,
               itemBuilder: (context, index) {
                 final article = _articles[index];
-
                 return NewsCard(
                   article: article,
                   onTap: () {
-                    // Navegar a detalle aquí
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ArticleDetailScreen(article: article),
+                      ),
+                    );
                   },
                 );
               },
