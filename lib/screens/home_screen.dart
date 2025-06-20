@@ -21,6 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Controlador para el campo de búsqueda
   TextEditingController _searchController = TextEditingController();
 
+  // Historial de búsqueda y última consulta
+  List<String> _searchHistory = [];
+  String? _lastQuery;
+
 
   // Estado de carga
   bool _isLoading = true;
@@ -38,18 +42,26 @@ Future<void> _loadNews({String? query}) async {
 
   try {
     final articles = query == null || query.isEmpty
-        ? await _newsService.fetchTopHeadlines(country: 'us') //AQUI PUEDES MODIFICAR PARA CAMBIAR LA REGIÓN PARA LAS NOTICIAS
+        ? await _newsService.fetchTopHeadlines(country: 'us')
         : await _newsService.searchNews(query);
 
     setState(() {
       _articles = articles;
       _isLoading = false;
+      _lastQuery = query;
+
+      // Guardar la búsqueda si fue exitosa y no está vacía
+      if (query != null && query.trim().isNotEmpty && !_searchHistory.contains(query)) {
+        _searchHistory.insert(0, query); // Agrega al inicio
+        if (_searchHistory.length > 10) _searchHistory.removeLast(); // Máximo 10
+      }
     });
   } catch (e) {
     print('Error al cargar noticias: $e');
     setState(() => _isLoading = false);
   }
 }
+
 
 
   // Método que construye la interfaz

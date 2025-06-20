@@ -27,7 +27,8 @@ class NewsService {
   // Método que obtiene noticias de por palabras clave
 Future<List<NewsArticle>> searchNews(String query) async {
   final url =
-      '$baseUrl?q=$query&sortBy=publishedAt&language=es&apiKey=$apiKey';
+      'https://newsapi.org/v2/everything?q=$query&sortBy=publishedAt&language=en&apiKey=$apiKey';
+
   final response = await http.get(Uri.parse(url));
 
   if (response.statusCode == 200) {
@@ -38,6 +39,7 @@ Future<List<NewsArticle>> searchNews(String query) async {
     throw Exception('Error al buscar noticias');
   }
 }
+
 
 
 }
