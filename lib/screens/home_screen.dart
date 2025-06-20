@@ -74,19 +74,32 @@ Widget build(BuildContext context) {
         // Barra de búsqueda
         Padding(
           padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  decoration: const InputDecoration(
-                    hintText: 'Buscar noticias...',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar noticias...',
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _loadNews(); // Recarga titulares
+                              },
+                            )
+                          : null,
+                    ),
+                    onChanged: (value) =>
+                        setState(() {}), // Para actualizar el botón de limpiar
+                    onSubmitted: (value) => _loadNews(query: value),
                   ),
-                  onSubmitted: (value) => _loadNews(query: value),
                 ),
-              ),
               const SizedBox(width: 8),
               ElevatedButton(
                 onPressed: () => _loadNews(query: _searchController.text),
