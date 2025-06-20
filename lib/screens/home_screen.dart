@@ -100,7 +100,15 @@ Widget build(BuildContext context) {
                     onSubmitted: (value) => _loadNews(query: value),
                   ),
                 ),
-                if (_searchHistory.isNotEmpty)
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () => _loadNews(query: _searchController.text),
+                  child: const Icon(Icons.search),
+                ),
+              ],
+            ),
+          ),
+          if (_searchHistory.isNotEmpty)
                   SizedBox(
                     height: 40,
                     child: ListView.separated(
@@ -117,15 +125,6 @@ Widget build(BuildContext context) {
                       },
                     ),
                   ),
-
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () => _loadNews(query: _searchController.text),
-                  child: const Icon(Icons.search),
-                ),
-              ],
-            ),
-          ),
         // Lista o loading
           Expanded(
             child: _isLoading
