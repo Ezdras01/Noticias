@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/news_article.dart';
+import 'package:share_plus/share_plus.dart';
 
 // Pantalla que muestra los detalles de una noticia
 class ArticleDetailScreen extends StatelessWidget {
@@ -68,6 +69,17 @@ class ArticleDetailScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => _launchURL(context),
                 child: const Text('Leer noticia completa'),
+              ),
+            ),
+            //botón de compartir
+            const SizedBox(height: 16),// Espacio entre botones
+            Center(
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.share),
+                label: const Text('Compartir'),
+                onPressed: () {
+                  Share.share('${article.title}\n${article.url}');
+                },
               ),
             ),
           ],
