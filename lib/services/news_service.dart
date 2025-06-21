@@ -24,11 +24,39 @@ class NewsService {
       throw Exception('Error al cargar noticias');
     }
   }
-  // Método que obtiene noticias de por palabras clave
-Future<List<NewsArticle>> searchNews(String query) async {
-  final url =
-      'https://newsapi.org/v2/everything?q=$query&sortBy=publishedAt&language=en&apiKey=$apiKey';
+// Método que obtiene el idioma basado en el código del país
+  // Método auxiliar para obtener idioma según país seleccionado
+String _getLanguageForCountry(String countryCode) {
+  switch (countryCode) {
+    case 'us':
+    case 'gb':
+    case 'in':
+      return 'en';
+    case 'fr':
+      return 'fr';
+    case 'de':
+      return 'de';
+    case 'it':
+      return 'it';
+    case 'es':
+      return 'es';
+    default:
+      return 'en'; // por defecto, inglés
+  }
+}
 
+  // Método que obtiene noticias de por palabras clave
+Future<List<NewsArticle>> searchNews(String query, String countryCode) async {
+ // final url =
+   //   'https://newsapi.org/v2/everything?q=$query&sortBy=publishedAt&language=en&apiKey=$apiKey';
+      
+      // Usa el idioma del país seleccionado (solo para mejorar el resultado)
+final language = _getLanguageForCountry(countryCode);
+
+final url =
+    'https://newsapi.org/v2/everything?q=$query&language=$language&sortBy=publishedAt&apiKey=$apiKey';
+
+    
   final response = await http.get(Uri.parse(url));
 
   if (response.statusCode == 200) {
@@ -39,8 +67,6 @@ Future<List<NewsArticle>> searchNews(String query) async {
     throw Exception('Error al buscar noticias');
   }
 }
-
-
 
 }
 

@@ -56,7 +56,7 @@ Future<void> _loadNews({String? query}) async {
   try {
 final articles = query == null || query.isEmpty
     ? await _newsService.fetchTopHeadlines(country: _selectedCountry)
-    : await _newsService.searchNews(query);
+    : await _newsService.searchNews(query, _selectedCountry);
 
     setState(() {
       _articles = articles;
