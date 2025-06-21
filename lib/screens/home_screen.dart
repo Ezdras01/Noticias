@@ -4,6 +4,8 @@ import '../services/news_service.dart';
 import '../widgets/news_card.dart';
 import 'article_detail_screen.dart';
 import '../widgets/responsive_scaffold.dart';
+import '../controllers/theme_controller.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -90,10 +92,24 @@ Future<void> _loadNews({String? query}) async {
 @override
 Widget build(BuildContext context) {
   return ResponsiveScaffold(
-    appBar: AppBar(
-      title: const Text('Noticias Hoy'),
-      centerTitle: true,
+appBar: AppBar(
+  title: const Text('Noticias Hoy'),
+  centerTitle: true,
+  actions: [
+    IconButton(
+      tooltip: 'Cambiar tema',
+      icon: Icon(
+        Theme.of(context).brightness == Brightness.dark
+            ? Icons.wb_sunny      // ☀️ en modo oscuro, muestra sol
+            : Icons.nightlight_round, // 🌙 en modo claro, muestra luna
+      ),
+      onPressed: () {
+        // Cambia el tema usando el Provider
+        Provider.of<ThemeController>(context, listen: false).toggleTheme();
+      },
     ),
+  ],
+),
     mobile: _buildMobileContent(),
     tablet: _buildTabletContent(),
   );
@@ -229,26 +245,61 @@ Widget _buildMobileContent() {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
-              children: [
-                TextField(
-                  controller: _searchController,
-                  decoration: const InputDecoration(
-                    hintText: 'Buscar noticias...',
-                    border: OutlineInputBorder(),
-                  ),
-                  onSubmitted: (value) => _loadNews(query: value),
-                ),
-                const SizedBox(height: 16),
-                if (_searchHistory.isNotEmpty)
-                  Wrap(
-                    spacing: 8,
-                    children: _searchHistory.map((term) => InputChip(
-                      label: Text(term),
-                      onPressed: () => _loadNews(query: term),
-                      onDeleted: () => setState(() => _searchHistory.remove(term)),
-                    )).toList(),
-                  ),
-              ],
+children: [
+  // 🌍 Selector de país
+  const Text(
+    'Selecciona un país:',
+    style: TextStyle(fontWeight: FontWeight.bold),
+  ),
+  const SizedBox(height: 8),
+  _buildCountrySelector(),
+  const SizedBox(height: 24),
+
+  // 🔍 Barra de búsqueda
+  TextField(
+    controller: _searchController,
+    decoration: const InputDecoration(
+      hintText: 'Buscar noticias...',
+      border: OutlineInputBorder(),
+    ),
+    onSubmitted: (value) => _loadNews(query: value),
+  ),
+  const SizedBox(height: 16),
+
+  // 📚 Historial de búsqueda
+if (_searchHistory.isNotEmpty)
+  Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          const Text(
+            'Historial:',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const Spacer(),
+          TextButton.icon(
+            onPressed: () => setState(() => _searchHistory.clear()),
+            icon: const Icon(Icons.delete_outline),
+            label: const Text('Borrar todo'),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        children: _searchHistory.map((term) => InputChip(
+          label: Text(term),
+          onPressed: () => _loadNews(query: term),
+          onDeleted: () => setState(() => _searchHistory.remove(term)),
+        )).toList(),
+      ),
+    ],
+  ),
+
+],
+
             ),
           ),
         ),
