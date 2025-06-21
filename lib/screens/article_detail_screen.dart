@@ -73,6 +73,7 @@ class ArticleDetailScreen extends StatelessWidget {
             ),
             //botón de compartir
             const SizedBox(height: 16),// Espacio entre botones
+          if(article.url.isNotEmpty)
             Center(
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.share),
