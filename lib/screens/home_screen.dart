@@ -222,23 +222,34 @@ Widget _buildMobileContent() {
     return Row(
       children: [
         // Lista de noticias (2/3 de pantalla)
-        Expanded(
-          flex: 2,
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  itemCount: _articles.length,
-                  itemBuilder: (context, index) => NewsCard(
-                    article: _articles[index],
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ArticleDetailScreen(article: _articles[index]),
-                      ),
-                    ),
-                  ),
+Expanded(
+  flex: 2,
+  child: _isLoading
+      ? const Center(child: CircularProgressIndicator())
+      : Scrollbar(
+          thumbVisibility: true,
+          child: GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 600,           // 🟦 2 columnas
+              mainAxisSpacing: 16,         // espacio vertical
+              crossAxisSpacing: 16,        // espacio horizontal
+              childAspectRatio: 1.5,       // ajustar forma de cada tarjeta
+            ),
+            itemCount: _articles.length,
+            itemBuilder: (context, index) => NewsCard(
+              article: _articles[index],
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ArticleDetailScreen(article: _articles[index]),
                 ),
+              ),
+            ),
+          ),
         ),
+),
+
         // Barra de búsqueda (1/3 de pantalla)
         Expanded(
           flex: 1,
