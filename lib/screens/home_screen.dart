@@ -20,6 +20,37 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> _searchHistory = [];
   String _selectedCountry = 'us';
 
+final Map<String, Map<String, String>> _countryOptions = {
+  'us': {'label': '🇺🇸 USA', 'language': 'en'},
+  'gb': {'label': '🇬🇧 Reino Unido', 'language': 'en'},
+  'fr': {'label': '🇫🇷 Francia', 'language': 'fr'},
+  'de': {'label': '🇩🇪 Alemania', 'language': 'de'},
+  'it': {'label': '🇮🇹 Italia', 'language': 'it'},
+  'es': {'label': '🇪🇸 España', 'language': 'es'},
+};
+
+
+//Widget para seleccionar el país
+Widget _buildCountrySelector() {
+  return DropdownButton<String>(
+    value: _selectedCountry,
+    items: _countryOptions.entries.map((entry) {
+      return DropdownMenuItem<String>(
+        value: entry.key,
+        child: Text(entry.value['label']!),
+      );
+    }).toList(),
+    onChanged: (value) {
+      if (value != null) {
+        setState(() => _selectedCountry = value);
+        _loadNews(); // recargar titulares con el país seleccionado
+      }
+    },
+  );
+}
+
+
+
 @override
 void initState() {
   super.initState();
@@ -28,27 +59,33 @@ void initState() {
   });
 }
 
-  Future<void> _loadNews({String? query}) async {
-    setState(() => _isLoading = true);
+Future<void> _loadNews({String? query}) async {
+  setState(() => _isLoading = true);
 
-    try {
-      final articles = query == null || query.isEmpty
-          ? await _newsService.fetchTopHeadlines(country: _selectedCountry)
-          : await _newsService.searchNews(query, _selectedCountry);
+  try {
+    final articles = query == null || query.isEmpty
+        // 🟢 Titulares por país
+        ? await _newsService.fetchTopHeadlines(country: _selectedCountry)
+        // 🔵 Búsqueda por palabra clave e idioma del país seleccionado
+        : await _newsService.searchNews(
+            query,
+            _countryOptions[_selectedCountry]!['language']!,
+          );
 
-      setState(() {
-        _articles = articles;
-        _isLoading = false;
-      });
+    setState(() {
+      _articles = articles;
+      _isLoading = false;
+    });
 
-      if (query != null && query.isNotEmpty && !_searchHistory.contains(query)) {
-        setState(() => _searchHistory.insert(0, query));
-      }
-    } catch (e) {
-      print('Error al cargar noticias: $e');
-      setState(() => _isLoading = false);
+    if (query != null && query.isNotEmpty && !_searchHistory.contains(query)) {
+      setState(() => _searchHistory.insert(0, query));
     }
+  } catch (e) {
+    print('Error al cargar noticias: $e');
+    setState(() => _isLoading = false);
   }
+}
+
 
 @override
 Widget build(BuildContext context) {
@@ -100,7 +137,10 @@ Widget _buildMobileContent() {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                    _buildCountrySelector(),
+                    const SizedBox(height: 12),
+
               // 📚 Historial
               if (_searchHistory.isNotEmpty)
                 Column(
