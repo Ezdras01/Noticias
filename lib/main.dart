@@ -1,34 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-//import 'package:device_info_plus/device_info_plus.dart';
 
 import 'controllers/theme_controller.dart';
 import 'screens/home_screen.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Detectar ancho físico en dp
-  final widthInDp = WidgetsBinding
-          .instance.platformDispatcher.views.first.physicalSize.width /
-      WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
-
-  final isTablet = widthInDp >= 600; // criterio estándar Android
-  debugPrint('Ancho en dp: $widthInDp — ¿Es tablet? $isTablet');
-
-  if (isTablet) {
-    await SystemChrome.setPreferredOrientations([
-      //DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-  } else {
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
-  }
-
+void main() {
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeController(),
@@ -36,7 +12,6 @@ Future<void> main() async {
     ),
   );
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -51,7 +26,7 @@ class MyApp extends StatelessWidget {
       themeMode: themeController.themeMode,
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      home: const HomeScreen(),
+      home: const HomeScreen(), // Ya es responsive desde aquí
     );
   }
 }
