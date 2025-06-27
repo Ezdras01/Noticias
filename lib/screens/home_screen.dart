@@ -6,6 +6,9 @@ import 'article_detail_screen.dart';
 import '../widgets/responsive_scaffold.dart';
 import '../controllers/theme_controller.dart';
 import 'package:provider/provider.dart';
+import 'package:logger/logger.dart';
+
+final logger = Logger();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -83,9 +86,10 @@ Future<void> _loadNews({String? query}) async {
       setState(() => _searchHistory.insert(0, query));
     }
   } catch (e) {
-    print('Error al cargar noticias: $e');
-    setState(() => _isLoading = false);
-  }
+  logger.e('Error al cargar noticias', error: e);
+  setState(() => _isLoading = false);
+}
+
 }
 
 
