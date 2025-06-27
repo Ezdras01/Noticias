@@ -10,15 +10,19 @@ class ArticleDetailScreen extends StatelessWidget {
   const ArticleDetailScreen({super.key, required this.article});
 
   // Método que abre la URL de la noticia en el navegador
-  Future<void> _launchURL(BuildContext context) async {
-    final Uri url = Uri.parse(article.url);
+Future<void> _launchURL(BuildContext context) async {
+  final Uri url = Uri.parse(article.url);
+  final success = await launchUrl(url);
 
-    if (!await launchUrl(url)) {
+  // ✅ Verifica si el contexto sigue montado antes de usarlo
+  if (!success) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No se pudo abrir el enlace')),
       );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
