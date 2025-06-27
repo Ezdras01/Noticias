@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<NewsArticle> _articles = [];
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
-  List<String> _searchHistory = [];
+  final List<String> _searchHistory = [];
   String _selectedCountry = 'us';
 
 final Map<String, Map<String, String>> _countryOptions = {
