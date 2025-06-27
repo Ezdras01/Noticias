@@ -26,7 +26,6 @@ class _ResponsiveScaffoldState extends State<ResponsiveScaffold> with WidgetsBin
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Bloqueo INMEDIATO de orientación antes de que se renderice la UI
     _lockInitialOrientation();
   }
 
@@ -38,28 +37,31 @@ class _ResponsiveScaffoldState extends State<ResponsiveScaffold> with WidgetsBin
   }
 
   Future<void> _lockInitialOrientation() async {
-    // 1. Bloqueo TEMPORAL la orientación actual inmediatamente
+    // 1. Bloqueo temporal inicial
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    
-    // 2. Determino el tipo de dispositivo SIN usar MediaQuery
-    final physicalSize = WidgetsBinding.instance.window.physicalSize;
-    final devicePixelRatio = WidgetsBinding.instance.window.devicePixelRatio;
+
+    // 2. Accedemos al tamaño físico de pantalla desde platformDispatcher
+    // Esto reemplaza el uso de `window`, que está deprecado desde Flutter 3.7+
+    // También evita el uso de `View.of(context)`, que no es válido en initState
+    final platformDispatcher = WidgetsBinding.instance.platformDispatcher;
+    final physicalSize = platformDispatcher.views.first.physicalSize;
+    final devicePixelRatio = platformDispatcher.views.first.devicePixelRatio;
     final shortestSide = physicalSize.shortestSide / devicePixelRatio;
 
+    // 3. Detectamos si es tablet (usamos heurística estándar + validación adicional en Android)
     bool isTablet;
     if (Platform.isAndroid) {
-      // Regla mejorada para Samsung
       isTablet = shortestSide >= 600 || 
                 (physicalSize.width >= 2000 && physicalSize.height >= 2000);
     } else {
       isTablet = shortestSide >= 600;
     }
 
-    // 3. Aplico la orientación definitiva
+    // 4. Aplicamos bloqueo de orientación según tipo de dispositivo
     if (!isTablet) {
       await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     } else {
@@ -70,6 +72,7 @@ class _ResponsiveScaffoldState extends State<ResponsiveScaffold> with WidgetsBin
       ]);
     }
 
+    // 5. Actualizamos estado si el widget sigue montado
     if (mounted) {
       setState(() {
         _isTablet = isTablet;
@@ -84,6 +87,7 @@ class _ResponsiveScaffoldState extends State<ResponsiveScaffold> with WidgetsBin
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    // 6. Aplicamos layout según tipo de dispositivo y orientación actual
     return Scaffold(
       appBar: widget.appBar,
       body: _isTablet!
