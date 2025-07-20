@@ -11,23 +11,29 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final shortestSide = size.shortestSide;
-    // es una tablet si es mayor o igual a 600 px y menor a 900 px
+    
+    // Es una tablet si el lado más corto es mayor o igual a 600 px y menor a 900 px
     final isTablet = shortestSide >= 600 && shortestSide < 900;
-    // es desktop si es mayor o igual a 900 px
+    
+    // Es desktop si el lado más corto es mayor o igual a 900 px
     final isDesktop = shortestSide >= 900;
-    // determina si la orientación es vertical o horizontal
+    
+    // Determina si la orientación es vertical o horizontal
     final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
 
-// si es difrente de tablet y difrente de desktop, entonces es phone
+    // Si no es tablet ni desktop, entonces es phone
     if (!isTablet && !isDesktop) {
       return const HomePhone();
-      // si es una tablet y esta en modo vertical
+      
+    // Si es una tablet y está en modo vertical
     } else if (isTablet && isPortrait) {
       return const HomeTabletVertical();
-      // si es una tablet y esta en modo horizontal
+      
+    // Si es una tablet y está en modo horizontal
     } else if (isTablet && !isPortrait) {
       return const HomeTabletHorizontal();
-      // para todo lo demás es desktop
+      
+    // Para todo lo demás, se asume que es desktop
     } else {
       return const HomeDesktop();
     }
