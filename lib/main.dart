@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'controllers/theme_controller.dart';
-import 'screens/home_screen.dart';
+import 'screens/splash/splash.dart';
 
 void main() {
   runApp(
@@ -24,9 +24,9 @@ class MyApp extends StatelessWidget {
       title: 'Noticias Hoy',
       debugShowCheckedModeBanner: false,
       themeMode: themeController.themeMode,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      home: const HomeScreen(), // Ya es responsive desde aquí
+      theme: theme,
+      darkTheme: darkTheme,
+      home: const SplashScreen(), // Ya es responsive desde aquí
     );
   }
 }
