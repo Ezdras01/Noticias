@@ -3,8 +3,8 @@ import '../../models/news_article.dart';
 import '../../services/news_service.dart';
 import '../../widgets/news_card.dart';
 import '../article_detail_screen.dart';
-import 'package:provider/provider.dart';
 import '../../controllers/theme_controller.dart';
+import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger();
@@ -109,7 +109,7 @@ class _HomeTabletVerticalState extends State<HomeTabletVertical> {
       ),
       body: Row(
         children: [
-          // Lista de noticias (2/3 de pantalla)
+          // 📰 Lista de noticias
           Expanded(
             flex: 2,
             child: _isLoading
@@ -140,7 +140,7 @@ class _HomeTabletVerticalState extends State<HomeTabletVertical> {
                   ),
           ),
 
-          // Barra lateral (1/3 de pantalla)
+          // 🔍 Barra lateral de búsqueda
           Expanded(
             flex: 1,
             child: Padding(
@@ -154,17 +154,16 @@ class _HomeTabletVerticalState extends State<HomeTabletVertical> {
                   const SizedBox(height: 8),
                   _buildCountrySelector(),
                   const SizedBox(height: 24),
-
                   TextField(
                     controller: _searchController,
                     decoration: const InputDecoration(
                       hintText: 'Buscar noticias...',
                       border: OutlineInputBorder(),
                     ),
-                    onSubmitted: (value) => _loadNews(query: value),
+                    onSubmitted: (value) =>
+                        _loadNews(query: value.trim()),
                   ),
                   const SizedBox(height: 16),
-
                   if (_searchHistory.isNotEmpty)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,8 +193,8 @@ class _HomeTabletVerticalState extends State<HomeTabletVertical> {
                                     label: Text(term),
                                     onPressed: () =>
                                         _loadNews(query: term),
-                                    onDeleted: () => setState(() =>
-                                        _searchHistory.remove(term)),
+                                    onDeleted: () => setState(
+                                        () => _searchHistory.remove(term)),
                                   ))
                               .toList(),
                         ),

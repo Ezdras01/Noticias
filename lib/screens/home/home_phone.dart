@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../models/news_article.dart';
 import '../../services/news_service.dart';
 import '../../widgets/news_card.dart';
-import '../../controllers/theme_controller.dart';
 import '../article_detail_screen.dart';
+import '../../controllers/theme_controller.dart';
+import 'package:provider/provider.dart';
+import 'package:logger/logger.dart';
 
-/// Pantalla principal adaptada para celulares.
+final logger = Logger();
+
 class HomePhone extends StatefulWidget {
   const HomePhone({super.key});
 
@@ -31,30 +33,6 @@ class _HomePhoneState extends State<HomePhone> {
     'es': {'label': '🇪🇸 España', 'language': 'es'},
   };
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadNews());
-  }
-
-  Future<void> _loadNews({String? query}) async {
-    setState(() => _isLoading = true);
-    try {
-      final articles = query == null || query.isEmpty
-          ? await _newsService.fetchTopHeadlines(country: _selectedCountry)
-          : await _newsService.searchNews(query, _countryOptions[_selectedCountry]!['language']!);
-      setState(() {
-        _articles = articles;
-        _isLoading = false;
-      });
-      if (query != null && query.isNotEmpty && !_searchHistory.contains(query)) {
-        setState(() => _searchHistory.insert(0, query));
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-    }
-  }
-
   Widget _buildCountrySelector() {
     return DropdownButton<String>(
       value: _selectedCountry,
@@ -74,6 +52,41 @@ class _HomePhoneState extends State<HomePhone> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadNews();
+    });
+  }
+
+  Future<void> _loadNews({String? query}) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final articles = query == null || query.isEmpty
+          ? await _newsService.fetchTopHeadlines(country: _selectedCountry)
+          : await _newsService.searchNews(
+              query,
+              _countryOptions[_selectedCountry]!['language']!,
+            );
+
+      setState(() {
+        _articles = articles;
+        _isLoading = false;
+      });
+
+      if (query != null &&
+          query.isNotEmpty &&
+          !_searchHistory.contains(query)) {
+        setState(() => _searchHistory.insert(0, query));
+      }
+    } catch (e) {
+      logger.e('Error al cargar noticias', error: e);
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -88,7 +101,8 @@ class _HomePhoneState extends State<HomePhone> {
                   : Icons.nightlight_round,
             ),
             onPressed: () {
-              Provider.of<ThemeController>(context, listen: false).toggleTheme();
+              Provider.of<ThemeController>(context, listen: false)
+                  .toggleTheme();
             },
           ),
         ],
@@ -107,7 +121,8 @@ class _HomePhoneState extends State<HomePhone> {
                           decoration: InputDecoration(
                             hintText: 'Buscar noticias...',
                             border: const OutlineInputBorder(),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 12),
                             suffixIcon: _searchController.text.isNotEmpty
                                 ? IconButton(
                                     icon: const Icon(Icons.clear),
@@ -119,12 +134,14 @@ class _HomePhoneState extends State<HomePhone> {
                                 : null,
                           ),
                           onChanged: (_) => setState(() {}),
-                          onSubmitted: (value) => _loadNews(query: value),
+                          onSubmitted: (value) =>
+                              _loadNews(query: value.trim()),
                         ),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: () => _loadNews(query: _searchController.text),
+                        onPressed: () =>
+                            _loadNews(query: _searchController.text.trim()),
                         child: const Icon(Icons.search),
                       ),
                     ],
@@ -142,10 +159,12 @@ class _HomePhoneState extends State<HomePhone> {
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                             const Spacer(),
                             TextButton.icon(
-                              onPressed: () => setState(() => _searchHistory.clear()),
+                              onPressed: () =>
+                                  setState(() => _searchHistory.clear()),
                               icon: const Icon(Icons.delete_outline),
                               label: const Text('Borrar todo'),
-                              style: TextButton.styleFrom(foregroundColor: Colors.red),
+                              style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red),
                             ),
                           ],
                         ),
@@ -154,7 +173,8 @@ class _HomePhoneState extends State<HomePhone> {
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: _searchHistory.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 8),
                             itemBuilder: (context, index) {
                               final term = _searchHistory[index];
                               return InputChip(
@@ -163,7 +183,8 @@ class _HomePhoneState extends State<HomePhone> {
                                   _searchController.text = term;
                                   _loadNews(query: term);
                                 },
-                                onDeleted: () => setState(() => _searchHistory.removeAt(index)),
+                                onDeleted: () => setState(
+                                    () => _searchHistory.removeAt(index)),
                               );
                             },
                           ),
@@ -179,8 +200,8 @@ class _HomePhoneState extends State<HomePhone> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                ArticleDetailScreen(article: _articles[index]),
+                            builder: (_) => ArticleDetailScreen(
+                                article: _articles[index]),
                           ),
                         ),
                       ),

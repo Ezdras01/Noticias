@@ -3,8 +3,8 @@ import '../../models/news_article.dart';
 import '../../services/news_service.dart';
 import '../../widgets/news_card.dart';
 import '../article_detail_screen.dart';
-import 'package:provider/provider.dart';
 import '../../controllers/theme_controller.dart';
+import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger();
@@ -33,6 +33,37 @@ class _HomeTabletHorizontalState extends State<HomeTabletHorizontal> {
     'es': {'label': '🇪🇸 España', 'language': 'es'},
   };
 
+  @override
+  void initState() {
+    super.initState();
+    _loadNews();
+  }
+
+  Future<void> _loadNews({String? query}) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final articles = query == null || query.isEmpty
+          ? await _newsService.fetchTopHeadlines(country: _selectedCountry)
+          : await _newsService.searchNews(
+              query,
+              _countryOptions[_selectedCountry]!['language']!,
+            );
+
+      setState(() {
+        _articles = articles;
+        _isLoading = false;
+      });
+
+      if (query != null && query.isNotEmpty && !_searchHistory.contains(query)) {
+        setState(() => _searchHistory.insert(0, query));
+      }
+    } catch (e) {
+      logger.e('Error al cargar noticias', error: e);
+      setState(() => _isLoading = false);
+    }
+  }
+
   Widget _buildCountrySelector() {
     return DropdownButton<String>(
       value: _selectedCountry,
@@ -52,127 +83,61 @@ class _HomeTabletHorizontalState extends State<HomeTabletHorizontal> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadNews();
-    });
-  }
-
-  Future<void> _loadNews({String? query}) async {
-    setState(() => _isLoading = true);
-
-    try {
-      final articles = query == null || query.isEmpty
-          ? await _newsService.fetchTopHeadlines(country: _selectedCountry)
-          : await _newsService.searchNews(
-              query,
-              _countryOptions[_selectedCountry]!['language']!,
-            );
-
-      setState(() {
-        _articles = articles;
-        _isLoading = false;
-      });
-
-      if (query != null &&
-          query.isNotEmpty &&
-          !_searchHistory.contains(query)) {
-        setState(() => _searchHistory.insert(0, query));
-      }
-    } catch (e) {
-      logger.e('Error al cargar noticias', error: e);
-      setState(() => _isLoading = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final themeController = Provider.of<ThemeController>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Noticias Hoy'),
         centerTitle: true,
         actions: [
           IconButton(
-            tooltip: 'Cambiar tema',
             icon: Icon(
               Theme.of(context).brightness == Brightness.dark
                   ? Icons.wb_sunny
                   : Icons.nightlight_round,
             ),
-            onPressed: () {
-              Provider.of<ThemeController>(context, listen: false)
-                  .toggleTheme();
-            },
+            onPressed: () => themeController.toggleTheme(),
           ),
         ],
       ),
       body: Row(
         children: [
-          // Lista de noticias (2/3)
-          Expanded(
-            flex: 2,
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Scrollbar(
-                    thumbVisibility: true,
-                    child: GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 600,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: 1.5,
-                      ),
-                      itemCount: _articles.length,
-                      itemBuilder: (context, index) => NewsCard(
-                        article: _articles[index],
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ArticleDetailScreen(
-                                article: _articles[index]),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-          ),
-
-          // Barra lateral (1/3)
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(24),
+          // Sidebar de búsqueda
+          Container(
+            width: 320,
+            padding: const EdgeInsets.all(16),
+            color: Theme.of(context).colorScheme.surfaceVariant,
+            child: SingleChildScrollView(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Selecciona un país:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  const Text('Selecciona un país:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   _buildCountrySelector(),
                   const SizedBox(height: 24),
                   TextField(
                     controller: _searchController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Buscar noticias...',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.search),
+                        onPressed: () => _loadNews(query: _searchController.text),
+                      ),
                     ),
                     onSubmitted: (value) => _loadNews(query: value),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   if (_searchHistory.isNotEmpty)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Text(
-                              'Historial:',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                            const Text('Historial:',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                             const Spacer(),
                             TextButton.icon(
                               onPressed: () =>
@@ -187,21 +152,47 @@ class _HomeTabletHorizontalState extends State<HomeTabletHorizontal> {
                         const SizedBox(height: 8),
                         Wrap(
                           spacing: 8,
-                          children: _searchHistory
-                              .map((term) => InputChip(
-                                    label: Text(term),
-                                    onPressed: () =>
-                                        _loadNews(query: term),
-                                    onDeleted: () => setState(() =>
-                                        _searchHistory.remove(term)),
-                                  ))
-                              .toList(),
+                          children: _searchHistory.map((term) {
+                            return InputChip(
+                              label: Text(term),
+                              onPressed: () => _loadNews(query: term),
+                              onDeleted: () =>
+                                  setState(() => _searchHistory.remove(term)),
+                            );
+                          }).toList(),
                         ),
                       ],
                     ),
                 ],
               ),
             ),
+          ),
+
+          // Contenido de noticias
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : GridView.builder(
+                    padding: const EdgeInsets.all(24),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 24,
+                      mainAxisSpacing: 24,
+                      childAspectRatio: 1.5,
+                    ),
+                    itemCount: _articles.length,
+                    itemBuilder: (context, index) => NewsCard(
+                      article: _articles[index],
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ArticleDetailScreen(article: _articles[index]),
+                        ),
+                      ),
+                    ),
+                  ),
           ),
         ],
       ),

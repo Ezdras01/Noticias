@@ -1,24 +1,25 @@
-import 'dart:io';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
-Future<void> configureOrientation() async {
-  final shortestSide = WidgetsBinding.instance.platformDispatcher.views.first.physicalSize.shortestSide /
-      WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+class OrientationHelper {
+  /// Devuelve `true` si el dispositivo es una tablet (ancho entre 600 y 1280dp)
+  static bool isTablet(BuildContext context) {
+    final shortestSide = MediaQuery.of(context).size.shortestSide;
+    return shortestSide >= 600 && shortestSide < 1280;
+  }
 
-  final isTablet = shortestSide >= 600 && shortestSide < 900;
-  final isDesktop = shortestSide >= 900 || kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  /// Devuelve `true` si el dispositivo es una computadora de escritorio (ancho >= 1280dp)
+  static bool isDesktop(BuildContext context) {
+    final shortestSide = MediaQuery.of(context).size.shortestSide;
+    return shortestSide >= 1280;
+  }
 
-  if (!isTablet && !isDesktop) {
-    // Celular: bloquear en modo vertical
-    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  } else {
-    // Tablet/Desktop: permitir ambas orientaciones
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+  /// Devuelve `true` si el dispositivo está en modo vertical
+  static bool isPortrait(BuildContext context) {
+    return MediaQuery.of(context).orientation == Orientation.portrait;
+  }
+
+  /// Devuelve `true` si el dispositivo está en modo horizontal
+  static bool isLandscape(BuildContext context) {
+    return MediaQuery.of(context).orientation == Orientation.landscape;
   }
 }

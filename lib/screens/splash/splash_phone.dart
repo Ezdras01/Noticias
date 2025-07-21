@@ -18,7 +18,7 @@ class _SplashPhoneState extends State<SplashPhone> {
 
     // Espera 3 segundos y redirige usando GetX
     Future.delayed(const Duration(seconds: 3), () {
-      Get.off(() => const HomeScreen());
+      Get.off(() => const Home());
     });
   }
 
