@@ -41,3 +41,6 @@ class ThemeController extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+ThemeData get theme => ThemeData.light();
+ThemeData get darkTheme => ThemeData.dark();
